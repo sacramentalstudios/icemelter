@@ -3,14 +3,33 @@
   <channel>
     <title>Ice Melter — Indie News Feed</title>
     <link>https://sacramentalstudios.github.io/ice-melter</link>
-    <description>Latest from Drop Site, Ground News, The Intercept</description>
+    <description>Truth that melts the ice. Curated from Drop Site, Ground News, The Intercept.</description>
     <lastBuildDate>Mon, 17 Nov 2025 12:00:00 +0000</lastBuildDate>
+
     <item>
-      <title>[Ice Melter] Feed initializing...</title>
-      <link>https://sacramentalstudios.github.io/ice-melter</link>
-      <description>Scraping latest stories — updates every 15 mins.</description>
-      <pubDate>Mon, 17 Nov 2025 12:00:00 +0000</pubDate>
-      <guid>https://sacramentalstudios.github.io/ice-melter</guid>
+      <title>[Drop Site News] Israel Floods Gaza Tunnels With Seawater</title>
+      <link>https://dropsitenews.substack.com/p/israel-floods-gaza-tunnels-with-seawater</link>
+      <description><![CDATA[<strong>Drop Site News:</strong> IDF begins controversial flooding operation in Gaza tunnel network.]]></description>
+      <pubDate>Mon, 17 Nov 2025 11:30:00 +0000</pubDate>
+      <guid>https://dropsitenews.substack.com/p/israel-floods-gaza-tunnels-with-seawater</guid>
     </item>
+
+    <item>
+      <title>[The Intercept] Leaked Docs: US Spied on Allies During UN Vote</title>
+      <link>https://theintercept.com/2025/11/16/us-spying-un-gaza-vote/</link>
+      <description><![CDATA[<strong>The Intercept:</strong> NSA cables reveal surveillance on diplomats ahead of Gaza resolution.]]></description>
+      <pubDate>Mon, 17 Nov 2025 10:15:00 +0000</pubDate>
+      <guid>https://theintercept.com/2025/11/16/us-spying-un-gaza-vote/</guid>
+    </item>
+
+    <item>
+      <title>[Ground News] Left Ignores Epstein Docs, Right Ignores Gaza</title>
+      <link>https://ground.news/article/left-ignores-epstein-right-ignores-gaza</link>
+      <description><![CDATA[<strong>Ground News:</strong> Blindspot analysis shows media bias in coverage of major stories.]]></description>
+      <pubDate>Mon, 17 Nov 2025 09:45:00 +0000</pubDate>
+      <guid>https://ground.news/article/left-ignores-epstein-right-ignores-gaza</guid>
+    </item>
+
+    <!-- Add more manually when you want -->
   </channel>
 </rss>
