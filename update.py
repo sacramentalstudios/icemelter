@@ -1,21 +1,15 @@
-name: Update Ice Melter
-on:
-  schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
-permissions:
-  contents: write
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: pip install feedparser
-      - run: python update.py
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Ice melted — feed updated"
-          file_pattern: docs/feed.xml
+import datetime
+import os
+
+# Just update the timestamp in feed.xml
+feed_path = "docs/feed.xml"
+with open(feed_path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+now = datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000")
+content = content.split("<lastBuildDate>")[0] + f"<lastBuildDate>{now}</lastBuildDate>" + content.split("</lastBuildDate>")[1]
+
+with open(feed_path, "w", encoding="utf-8") as f:
+    f.write(content)
+
+print(f"Feed timestamp updated: {now}")
