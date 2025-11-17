@@ -1,31 +1,40 @@
-import requests, xml.etree.ElementTree as ET, datetime, os
-from bs4 import BeautifulSoup
+from requests_html import HTMLSession
+import xml.etree.ElementTree as ET
+import datetime, os
 from urllib.parse import urljoin
 
-HEADERS = {'User-Agent': 'IceMelterBot/1.0'}
+session = HTMLSession()
+session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
 
 SITES = [
-    ("Drop Site", "https://dropsitenews.substack.com", ".post-preview-title a", ".post-preview-excerpt"),
-    ("Ground News", "https://ground.news/blindspot", "[data-testid='story-title'] a", "[data-testid='story-summary']"),
-    ("Intercept", "https://theintercept.com", "h3 a", ".post-excerpt")
+    ("Drop Site", "https://dropsitenews.substack.com", "https://dropsitenews.substack.com/feed", "item title", "item description"),
+    ("Ground News", "https://ground.news/blindspot", None, ".story-title a", ".story-summary"),
+    ("Intercept", "https://theintercept.com", None, "h3 a", ".post-excerpt")
 ]
 
 def fetch():
     items = []
-    for name, url, title_sel, desc_sel in SITES:
+    for name, url, feed_url, title_sel, desc_sel in SITES:
         try:
-            r = requests.get(url, headers=HEADERS, timeout=10)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for a in soup.select(title_sel)[:3]:
-                link = urljoin(url, a.get('href', ''))
-                desc_tag = a.find_next(desc_sel)
-                desc = desc_tag.get_text(strip=True)[:200] + '...' if desc_tag else ''
-                items.append({
-                    'title': f"[{name}] {a.get_text(strip=True)}",
-                    'link': link,
-                    'desc': desc,
-                    'date': datetime.datetime.now().isoformat()
-                })
+            if feed_url:  # Use RSS for Substack (bypasses block)
+                r = session.get(feed_url)
+                soup = r.html.html  # Rendered HTML
+                soup_obj = BeautifulSoup(soup, 'html.parser')
+                for entry in soup_obj.select(title_sel)[:3]:
+                    title = entry.get_text(strip=True)
+                    link = entry.get('href', urljoin(feed_url, entry.get('href', '')))
+                    desc = soup_obj.select_one(f"{title_sel} + {desc_sel}").get_text(strip=True)[:200] + '...' if soup_obj.select(f"{title_sel} + {desc_sel}") else ''
+                    items.append({'title': f"[{name}] {title}", 'link': link, 'desc': desc, 'date': datetime.datetime.now().isoformat()})
+            else:  # HTML scrape with JS render
+                r = session.get(url)
+                r.html.render(timeout=20)  # Render JS
+                for a in r.html.find(title_sel)[:3]:
+                    title = a.text.strip()
+                    link = a.attrs.get('href', '')
+                    if link: link = urljoin(url, link)
+                    desc_elem = a.find_next(desc_sel)
+                    desc = desc_elem[0].text.strip()[:200] + '...' if desc_elem else ''
+                    items.append({'title': f"[{name}] {title}", 'link': link, 'desc': desc, 'date': datetime.datetime.now().isoformat()})
         except Exception as e:
             print(f"Error {name}: {e}")
     return items
@@ -33,12 +42,9 @@ def fetch():
 def build_rss(items):
     rss = ET.Element('rss', version='2.0')
     channel = ET.SubElement(rss, 'channel')
-    for t in ['title', 'link', 'description']:
-        ET.SubElement(channel, t).text = {
-            'title': 'Ice Melter — Indie News',
-            'link': 'https://sacramentalstudios.github.io/ice-melter',
-            'description': 'Truth that melts the ice.'
-        }[t]
+    ET.SubElement(channel, 'title').text = 'Ice Melter — Indie News'
+    ET.SubElement(channel, 'link').text = 'https://sacramentalstudios.github.io/ice-melter'
+    ET.SubElement(channel, 'description').text = 'Truth that melts the ice.'
     ET.SubElement(channel, 'lastBuildDate').text = datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000")
     for i in items:
         item = ET.SubElement(channel, 'item')
@@ -51,5 +57,6 @@ def build_rss(items):
 
 items = fetch()
 os.makedirs('docs', exist_ok=True)
-open('docs/feed.xml', 'w', encoding='utf-8').write(build_rss(items))
-print("Ice Melter feed updated!")
+with open('docs/feed.xml', 'w', encoding='utf-8') as f:
+    f.write(build_rss(items))
+print(f"Ice Melter updated with {len(items)} items!")
